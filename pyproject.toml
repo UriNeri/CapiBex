@@ -1,0 +1,91 @@
+[build-system]
+requires = ["maturin ~=1.2"]
+build-backend = "maturin"
+
+[project]
+name = "CapiBex"
+dynamic = ["version"]
+authors = [
+    { name = "Uri Neri", email = "uri.neri@gmail.com" },
+    { name = "Antônio Camargo", email = "antoniop.camargo@gmail.com" },
+]
+description = "miscellaneous bioinfo"
+readme = "README.md"
+license = { file = "LICENSE" }
+dependencies = [
+    "pip"]
+
+
+[project.urls]
+Source = "https://github.com/UriNeri/CapiBex"
+
+[dependency-groups]
+build = ["maturin >=1.2,<2", "pip >=25.0.1,<26"]
+format = ["ruff >=0.11.3,<0.12"]
+publish = ["twine >=6.1.0,<7"]
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["linux-64"] 
+
+[tool.pixi.dependencies]
+rust = ">=1.70.0"
+pip = ">=24.0"
+maturin = ">=1.8,<2"
+twine = ">=6.1.0,<7"
+ruff = ">=0.11.3,<0.12"
+
+[tool.pixi.pypi-dependencies]
+CapiBex = { path = ".", editable = true }
+
+[tool.pixi.tasks]
+test-import = "python -c 'import CapiBex; print(CapiBex.__version__)'"
+format = "ruff check --select I --fix src && ruff format src"
+publish-pypi = "twine upload dist/*"
+# build-pypi = "maturin build --release"
+
+[tool.ruff]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+
+line-length = 100
+indent-width = 4
+target-version = "py39"
+
+[tool.ruff.lint]
+ignore = ["E501", "E402", "E401","PLC0415"]
+fixable = ["ALL"]
+unfixable = []
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.format]
+line-ending = "auto"
