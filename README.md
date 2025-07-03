@@ -6,7 +6,12 @@ misc. bioinfo
 Everything is managed by [pixi](https://pixi.sh/).
 
 ```bash
-# install rust
+# install everthing
 pixi install
+pixi shell
 ```
-Then via cargo or maturin.
+
+
+
+
+![](assets/CapiBex_logo.jpg)

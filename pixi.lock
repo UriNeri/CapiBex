@@ -195,6 +195,13 @@ packages:
   purls: []
   size: 158144
   timestamp: 1738298224464
+- pypi: .
+  name: capibex
+  version: 0.1.0
+  sha256: 94329df93ae629f9a43bfebe1a2c6471fb6fc822a542610c701612192026ca8a
+  requires_dist:
+  - pip
+  editable: true
 - conda: https://conda.anaconda.org/conda-forge/noarch/certifi-2025.1.31-pyhd8ed1ab_0.conda
   sha256: 42a78446da06a2568cb13e69be3355169fbd0ea424b00fc80b7d840f5baaacf3
   md5: c207fa5ac7ea99b149344385a9c0880d
@@ -969,13 +976,6 @@ packages:
   - pkg:pypi/rich?source=hash-mapping
   size: 200323
   timestamp: 1743371105291
-- pypi: .
-  name: capibex
-  version: 0.1.0
-  sha256: c189b2c7fb00fd8301167637908875b90f8b4143796e9d003cf9c22060bd0038
-  requires_dist:
-  - pip
-  editable: true
 - conda: https://conda.anaconda.org/conda-forge/linux-64/ruff-0.11.5-py312h286b59f_0.conda
   sha256: cf1841ea018fe0454fd6702bbc2ceed47ecc6eb6a8833bd02f5645496eb938b6
   md5: 8d601aeb30065c16564c9222287ad4a6

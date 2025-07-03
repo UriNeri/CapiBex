@@ -1,23 +1,56 @@
 use pyo3::prelude::*;
 use needletail::parse_fastx_file;
 use std::collections::HashMap;
-use crate::seq_utils::reverse_complement;
+use crate::seq_utils::{reverse_complement, is_dna_string};
 
 
 // Genetic codes / variables sourced from Seals2 by Yuri Wolf (https://github.com/YuriWolf-ncbi/seals-2/blob/master/bin/misc/orf)
 // Original Perl implementation for comprehensive genetic code support
+
+// #[pyclass]
+// /// Common names names to number, fetched on 03/07/2025 from https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi 
+// pub enum GeneticCode {
+//     Standard = 1, // The Standard Code
+//     Vertebrate = 2, // The Vertebrate Mitochondrial Code
+//     Yeast = 3, // The Yeast Mitochondrial Code
+//     MoldProt = 4, // The Mold, Protozoan, and Coelenterate Mitochondrial Code and the Mycoplasma/Spiroplasma Code
+//     Invertebrate = 5, // The Invertebrate Mitochondrial Code
+//     Ciliate = 6, // The Ciliate, Dasycladacean and Hexamita Nuclear Code
+//     Echinoderm = 9, // The Echinoderm and Flatworm Mitochondrial Code
+//     Euplotid = 10, // The Euplotid Nuclear Code
+//     Bacterial = 11, // The Bacterial, Archaeal and Plant Plastid Code
+//     AltYeast = 12, // The Alternative Yeast Nuclear Code
+//     Ascidian = 13, // The Ascidian Mitochondrial Code
+//     AltFlatWorm = 14, // The Alternative Flatworm Mitochondrial Code
+//     Blepharisma = 15, // Blepharisma Nuclear Code
+//     Chlorophycean = 16, // Chlorophycean Mitochondrial Code
+//     Trematode = 21, // Trematode Mitochondrial Code
+//     Scenedesmus = 22, // Scenedesmus obliquus Mitochondrial Code
+//     Thraustochytrium = 23, // Thraustochytrium Mitochondrial Code
+//     Rhabdopleuridae = 24, // Rhabdopleuridae Mitochondrial Code
+//     CandidateDivision = 25, // Candidate Division SR1 and Gracilibacteria Code
+//     Pachysolen = 26, // Pachysolen tannophilus Nuclear Code
+//     Karyorelict = 27, // Karyorelict Nuclear Code
+//     Condylostoma = 28, // Condylostoma Nuclear Code
+//     Mesodinium = 29, // Mesodinium Nuclear Code
+//     Peritrich = 30, // Peritrich Nuclear Code
+//     Blastocrithidia = 31, // Blastocrithidia Nuclear Code
+//     Balanophoraceae = 32, // Balanophoraceae Plastid Code
+//     Cephalodiscidae = 33, // Cephalodiscidae Mitochondrial UAA-Tyr Code
+// }
+
 
 /// Genetic code amino acid sequences (64 codons in order: TTT, TTC, TTA, TTG, TCT, TCC, TCA, TCG, TAT, TAC, TAA, TAG, TGT, TGC, TGA, TGG, CTT, CTC, CTA, CTG, CCT, CCC, CCA, CCG, CAT, CAC, CAA, CAG, CGT, CGC, CGA, CGG, ATT, ATC, ATA, ATG, ACT, ACC, ACA, ACG, AAT, AAC, AAA, AAG, AGT, AGC, AGA, AGG, GTT, GTC, GTA, GTG, GCT, GCC, GCA, GCG, GAT, GAC, GAA, GAG, GGT, GGC, GGA, GGG)
 fn get_genetic_code_table() -> HashMap<u32, &'static str> {
     let mut code_table = HashMap::new();
     
     code_table.insert(1, "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG");
-    code_table.insert(2, "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSS**VVVVAAAADDEEGGGG");
-    code_table.insert(3, "FFLLSSSSYY**CCWWTTTTPPPPHHQQRRRRIIMMTTTTNNKKSSRRVVVVAAAADDEEGGGG");
-    code_table.insert(4, "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG");
-    code_table.insert(5, "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSSSSVVVVAAAADDEEGGGG");
-    code_table.insert(6, "FFLLSSSSYYQQCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG");
-    code_table.insert(9, "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNNKSSSSVVVVAAAADDEEGGGG");
+    code_table.insert(2, "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSS**VVVVAAAADDEEGGGG"); 
+    code_table.insert(3, "FFLLSSSSYY**CCWWTTTTPPPPHHQQRRRRIIMMTTTTNNKKSSRRVVVVAAAADDEEGGGG"); 
+    code_table.insert(4, "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG"); 
+    code_table.insert(5, "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSSSSVVVVAAAADDEEGGGG"); 
+    code_table.insert(6, "FFLLSSSSYYQQCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG"); 
+    code_table.insert(9, "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNNKSSSSVVVVAAAADDEEGGGG"); 
     code_table.insert(10, "FFLLSSSSYY**CCCWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG");
     code_table.insert(11, "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG");
     code_table.insert(12, "FFLLSSSSYY**CC*WLLLSPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG");
@@ -161,15 +194,13 @@ pub fn translate(
     
     // Convert to uppercase and replace U with T for RNA
     let mut seq = sequence.to_uppercase().replace('U', "T");
-    
-    // Validate sequence contains only valid nucleotides
-    for c in seq.chars() {
-        if !matches!(c, 'A' | 'T' | 'C' | 'G' | 'U') {
-            return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                "Sequence contains invalid nucleotides. Only A, T, C, G, U are allowed."
-            ));
-        }
+
+    if !is_dna_string(&seq) {
+        return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "Sequence contains invalid nucleotides. Only A, T, C, G, U are allowed."
+        ));
     }
+
     
     // Apply start and stop positions  
     let end_pos = stop.unwrap_or(seq.len());

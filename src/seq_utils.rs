@@ -7,7 +7,7 @@ pub const AMINO_ACID_ALPHABET: &str = "ACDEFGHIKLMNPQRSTVWYXZ*";
 
 // DNA + RNA alphabet
 pub const XNA_ALPHABET: &str = "ACGTU";
-// pub const DNA_ALPHABET: &str = "ACGT";
+pub const DNA_ALPHABET: &str = "ACGT";
 // pub const RNA_ALPHABET: &str = "ACGU";
 pub const AMBIGUOUS_ALPHABET: &str = "ATGCUNRYSWKMBDHV";
 
@@ -29,6 +29,11 @@ pub fn is_ambiguous_string(sequence: &str) -> bool {
     sequence.chars().all(|c| AMBIGUOUS_ALPHABET.contains(c))
 }
 
+// is dna string
+#[pyfunction]
+pub fn is_dna_string(sequence: &str) -> bool {
+    sequence.chars().all(|c| DNA_ALPHABET.contains(c))
+}
 
 /// Complement a DNA base - using ambigous bases too
 #[pyfunction]
