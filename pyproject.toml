@@ -3,7 +3,7 @@ requires = ["maturin ~=1.2"]
 build-backend = "maturin"
 
 [project]
-name = "CapiBex"
+name = "capibex"
 dynamic = ["version"]
 authors = [
     { name = "Uri Neri", email = "uri.neri@gmail.com" },
@@ -17,7 +17,7 @@ dependencies = [
 
 
 [project.urls]
-Source = "https://github.com/UriNeri/CapiBex"
+Source = "https://github.com/UriNeri/capibex"
 
 [dependency-groups]
 build = ["maturin >=1.2,<2", "pip >=25.0.1,<26"]
@@ -39,10 +39,10 @@ twine = ">=6.1.0,<7"
 ruff = ">=0.11.3,<0.12"
 
 [tool.pixi.pypi-dependencies]
-CapiBex = { path = ".", editable = true }
+capibex = { path = ".", editable = true }
 
 [tool.pixi.tasks]
-test-import = "python -c 'import CapiBex; print(CapiBex.__version__)'"
+test-import = "python -c 'import capibex; print(capibex.__version__)'"
 format = "ruff check --select I --fix src && ruff format src"
 publish-pypi = "twine upload dist/*"
 # build-pypi = "maturin build --release"
