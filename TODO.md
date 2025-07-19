@@ -1,0 +1,3 @@
+- [ ] Organize the Python library in submodules (e.g., put all FASTX parsing stuff into a `capibex.fastx` submodule).
+- [ ] Use Needletail for the reverse complement.
+- [ ] Write function for fast k-mer counting.
