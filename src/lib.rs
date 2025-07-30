@@ -7,6 +7,7 @@ mod dedup;
 mod filter;
 mod sample;
 mod seq_utils;
+mod fastx;
 
 // Expose the PyO3 modules
 #[pymodule]
@@ -36,6 +37,15 @@ fn capibex(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(seq_utils::is_xna_string, m)?)?;
     m.add_function(wrap_pyfunction!(seq_utils::is_ambiguous_string, m)?)?;
     m.add_function(wrap_pyfunction!(seq_utils::complement_base, m)?)?;
+
+    m.add_class::<fastx::PyFastxReader>()?;
+    m.add_class::<fastx::Record>()?;
+    m.add_wrapped(wrap_pyfunction!(fastx::py_parse_fastx_file))?;
+    m.add_wrapped(wrap_pyfunction!(fastx::parse_fastx_string))?;
+    m.add_wrapped(wrap_pyfunction!(fastx::normalize_seq))?;
+    m.add_wrapped(wrap_pyfunction!(fastx::reverse_complement))?;
+    m.add_wrapped(wrap_pyfunction!(fastx::py_decode_phred))?;
+    m.add("FastxParseError", py.get_type::<FastxParseError>())?;
 
     Ok(())
 }
